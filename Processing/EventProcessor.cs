@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
+﻿using NLog;
 using Qognify.Config;
 using Qognify.Logging;
 using Qognify.Processing;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+
 
 namespace Qognify.Processing
 {
     public class EventProcessor
     {
+        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>(); 
+        
         private readonly ConcurrentQueue<string> _queue;
         private readonly TimeSpan _interval;
         private readonly CancellationToken _ct;
@@ -62,6 +66,7 @@ namespace Qognify.Processing
                     if (batch.Count > 0)
                     {
                         Console.WriteLine("STEP 01 : Transform LIST_EVENTSHARED to Dictionary DICT_Events");
+                        log.Info("STEP 01 : Transform LIST_EVENTSHARED to Dictionary DICT_Events");
 
                         // 1) parse_fixed_width
                         var dictEvents = FixedWidthParser.Parse(batch, _fields);

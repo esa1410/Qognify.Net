@@ -1,3 +1,5 @@
+using NLog;
+using Qognify.Logging;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +14,8 @@ namespace Qognify.Networking
 
         private TcpClient _client;
         private NetworkStream _stream;
+        
+        private static readonly Logger log = LoggerFactory.GetLogger<TcpClientSender>();
 
         public TcpClientSender(string host, int port, TimeSpan timeout)
         {
@@ -35,6 +39,7 @@ namespace Qognify.Networking
             _stream = _client.GetStream();
         }
 
+        
         public bool Send(string message)
         {
             try
@@ -44,7 +49,7 @@ namespace Qognify.Networking
                 byte[] data = Encoding.UTF8.GetBytes(message + "\r\n");
                 _stream.Write(data, 0, data.Length);
                 _stream.Flush();
-
+                log.Info($"Sent to {_host}:{_port} -> {message}");
                 return true;
             }
             catch (Exception ex)

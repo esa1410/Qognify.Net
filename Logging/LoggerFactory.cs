@@ -1,7 +1,12 @@
-﻿namespace Qognify.Logging
+using NLog;
+
+namespace Qognify.Logging
 {
-    // TODO: intÃ©grer NLog / log4net ou wrapper System.Diagnostics
     public static class LoggerFactory
     {
+        public static Logger GetLogger<T>()
+        {
+            return LogManager.GetLogger(typeof(T).FullName);
+        }
     }
 }

@@ -18,6 +18,20 @@ namespace Qognify
             var settingsPath = Path.Combine(baseDir, "appsettings.json");
             var settings = AppSettingsLoader.Load(settingsPath);
 
+            // Injecte dynamiquement le BaseDir : utiliser pour Construire les chemins de fichiers
+            settings.Files.BaseDir = baseDir;
+
+            //Path Pour LogN
+            var logDir = Path.Combine(baseDir, "logs");
+            var logArchive = Path.Combine(logDir, "archive");
+            Directory.CreateDirectory(logDir);
+            Directory.CreateDirectory(logArchive);
+            // Injecte la variable NLog
+            //NLog.LogManager.Configuration.Variables["logDir"] = logDir;
+            var config = NLog.LogManager.Configuration;
+            config.Variables["logDir"] = logDir;
+            //NLog.LogManager.ReconfigExistingLoggers();
+
             /// Création d'un Jeton pour arrêter le serveur
             var cts = new CancellationTokenSource();
             /// Creation d'un buffer In/Out - Alimentation/Consommateur
