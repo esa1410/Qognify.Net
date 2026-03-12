@@ -6,13 +6,16 @@ using System.Threading;
 using Qognify.Config;
 using Qognify.Networking;
 using Qognify.Processing;
-
+using NLog;
+using Qognify.Logging;
 namespace Qognify
 {
     internal static class Program
     {
+        public static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>();
         static void Main()
         {
+
             /// Load Json Setting
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var settingsPath = Path.Combine(baseDir, "appsettings.json");

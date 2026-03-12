@@ -1,7 +1,7 @@
 ﻿using NLog;
 using Qognify.Config;
 using Qognify.Logging;
-using Qognify.Processing;
+//using Qognify.Processing;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,8 +12,8 @@ namespace Qognify.Processing
 {
     public class EventProcessor
     {
-        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>(); 
-        
+        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>();
+
         private readonly ConcurrentQueue<string> _queue;
         private readonly TimeSpan _interval;
         private readonly CancellationToken _ct;
@@ -50,7 +50,9 @@ namespace Qognify.Processing
         {
             ThreadPool.QueueUserWorkItem(_ => Loop());
         }
-
+        /// <summary>
+        /// Loop for treatment buffer
+        /// </summary>
         private void Loop()
         {
             var last = DateTime.UtcNow;
@@ -73,12 +75,14 @@ namespace Qognify.Processing
 
                         // 2) build_to_send
                         Console.WriteLine("STEP 02 : Traitement des données dans DICT_Events");
+                        //log.Info("STEP 02 : Traitement des données dans DICT_Events");
 
                         string csvPath = System.IO.Path.Combine(
                             _settings.Files.BaseDir,
                             _settings.Files.CsvListKeynameAction
                         );
 
+                        //ddm call Build to send may be filter ACK for empty (ACK=OK is return to normal) (ACK=ACK is acknowledge)
                         var toSend = BuildToSend.Build(
                             dictEvents,
                             _lastSentTimes,
@@ -102,7 +106,8 @@ namespace Qognify.Processing
         private List<string> DequeueAll()
         {
             var list = new List<string>();
-            while (_queue.TryDequeue(out var item))
+            string item;
+            while (_queue.TryDequeue(out item))
                 list.Add(item);
             return list;
         }

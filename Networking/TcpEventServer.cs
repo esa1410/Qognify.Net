@@ -74,7 +74,8 @@ namespace Qognify.Networking
                             if (data.StartsWith("\r\n"))
                                 data = data.Substring(2);
 
-                            var line = data.Trim();
+                            //ddm si pas de description le string est moins long
+                            var line = data;//.Trim();
                             if (!string.IsNullOrEmpty(line))
                                 _queue.Enqueue(line);
 
