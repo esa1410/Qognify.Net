@@ -8,18 +8,25 @@ using Qognify.Networking;
 using Qognify.Processing;
 using NLog;
 using Qognify.Logging;
+
 namespace Qognify
 {
     internal static class Program
     {
         public static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>();
+
+
         static void Main()
         {
 
             /// Load Json Setting
+            /// Application path
+            /// todo change for using webpath csvfile
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            //var baseDir = @"C:\ProjectsVS\WebAppQognify\WebQognify\CSVFile";
             var settingsPath = Path.Combine(baseDir, "appsettings.json");
             var settings = AppSettingsLoader.Load(settingsPath);
+            
 
             // Injecte dynamiquement le BaseDir : utiliser pour Construire les chemins de fichiers
             settings.Files.BaseDir = baseDir;
@@ -54,6 +61,7 @@ namespace Qognify
                 cts.Token,
                 settings   // ← 4th argument added
             );
+           
 
             Console.WriteLine("Qognify .NET server started. Press Ctrl+C to exit.");
 

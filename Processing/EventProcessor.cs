@@ -1,7 +1,6 @@
 ﻿using NLog;
 using Qognify.Config;
 using Qognify.Logging;
-//using Qognify.Processing;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,6 +20,7 @@ namespace Qognify.Processing
         // Champs nécessaires pour build_to_send
         private readonly Dictionary<string, double> _lastSentTimes = new Dictionary<string, double>();
         private readonly QognifySettings _settings;
+        string BaseDirCSV = Properties.Settings.Default.CSVFilesPath;
 
         // Définition des champs FIXED-WIDTH (équivalent Python FIELDS)
         private readonly List<Tuple<string, int>> _fields = new List<Tuple<string, int>>
@@ -67,7 +67,7 @@ namespace Qognify.Processing
 
                     if (batch.Count > 0)
                     {
-                        Console.WriteLine("STEP 01 : Transform LIST_EVENTSHARED to Dictionary DICT_Events");
+                        
                         log.Info("STEP 01 : Transform LIST_EVENTSHARED to Dictionary DICT_Events");
 
                         // 1) parse_fixed_width
@@ -77,8 +77,11 @@ namespace Qognify.Processing
                         Console.WriteLine("STEP 02 : Traitement des données dans DICT_Events");
                         //log.Info("STEP 02 : Traitement des données dans DICT_Events");
 
+                        //string csvPath = System.IO.Path.Combine(
+                        //    _settings.Files.BaseDir,
+                        //    _settings.Files.CsvListKeynameAction
                         string csvPath = System.IO.Path.Combine(
-                            _settings.Files.BaseDir,
+                            BaseDirCSV,
                             _settings.Files.CsvListKeynameAction
                         );
 
@@ -87,7 +90,7 @@ namespace Qognify.Processing
                             dictEvents,
                             _lastSentTimes,
                             csvPath,
-                            _settings.Files.BaseDir
+                            BaseDirCSV
                         );
 
                         // 3) log_tosend

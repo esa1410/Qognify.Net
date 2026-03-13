@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,6 +8,9 @@ namespace Qognify.Processing
 {
     public static class BuildToSend
     {
+        //ddm declaration pour variable global
+        private static Dictionary<string, List<Dictionary<string, string>>> filterMap;
+        private static readonly Logger log = Logging.LoggerFactory.GetLogger<EventProcessor>();
 
         public static Dictionary<string, List<Dictionary<string, string>>> Build(
             List<Dictionary<string, string>> events,
@@ -17,7 +21,26 @@ namespace Qognify.Processing
 
             //ddm load filter reference into filtermap
             //todo check if flag exist 
-            var filterMap = FilterLoader.LoadFilterCsv(csvListKeynameActionPath);
+            string FlagFile = baseDir + @"\flag";
+            bool exists = File.Exists(FlagFile);
+
+            //if flag exist then reload filter
+            if (filterMap == null || exists)
+            {
+                //Logging.LogToSend.Dump()
+                log.Info($"Keyname reload because change occurs");
+                if (exists)
+                {
+                    if (File.Exists(FlagFile))
+                    {
+                        File.Delete(FlagFile);
+                    }
+                }
+                //todo créer une copie des fichiers
+                filterMap = FilterLoader.LoadFilterCsv(csvListKeynameActionPath);
+
+            }
+
 
             //ddm create alarmTypeCache dictinnary with ingnore case 
             var alarmTypeCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
