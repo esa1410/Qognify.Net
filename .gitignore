@@ -7,3 +7,5 @@ packages/
 *.ps1
 *.sln
 *.csproj
+*.bak
+*.orig
