@@ -26,6 +26,15 @@ namespace Qognify.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\ProjectsVS\\WebAppQognify\\WebQognify\\CSVFile")]
+        public string CSVFilesPathWeb {
+            get {
+                return ((string)(this["CSVFilesPathWeb"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\ProjectsVS\\Qognify.Net\\bin\\Debug")]
         public string CSVFilesPath {
             get {
                 return ((string)(this["CSVFilesPath"]));
