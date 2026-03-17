@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NLog;
+using Qognify.Logging;
+using Qognify.Processing;
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
@@ -9,6 +12,7 @@ namespace Qognify.Networking
 {
     public class TcpEventServer : IDisposable
     {
+        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>(); 
         private readonly TcpListener _listener;
         private readonly ConcurrentQueue<string> _queue;
         private readonly TimeSpan _timeout;
@@ -51,7 +55,7 @@ namespace Qognify.Networking
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("TCP Server error: " + ex);
+                log.Error("TCP Server error: " + ex);
             }
         }
 
@@ -70,12 +74,14 @@ namespace Qognify.Networking
                         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
                         {
                             var data = Encoding.UTF8.GetString(buffer, 0, read);
+                            //log.Debug($"[TCP SERVER] Received: {data}");
 
                             if (data.StartsWith("\r\n"))
                                 data = data.Substring(2);
-
+                            
                             //ddm si pas de description le string est moins long
                             var line = data;//.Trim();
+                            
                             if (!string.IsNullOrEmpty(line))
                                 _queue.Enqueue(line);
 
@@ -86,7 +92,7 @@ namespace Qognify.Networking
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Client error: " + ex);
+                    log.Error("Client error: " + ex);
                 }
             }
         }

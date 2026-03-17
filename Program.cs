@@ -41,7 +41,7 @@ namespace Qognify
             var config = NLog.LogManager.Configuration;
             config.Variables["logDir"] = logDir;
             //NLog.LogManager.ReconfigExistingLoggers();
-
+            log.Warn("********** START  Qognify **********");
             /// Création d'un Jeton pour arrêter le serveur
             var cts = new CancellationTokenSource();
             /// Creation d'un buffer In/Out - Alimentation/Consommateur

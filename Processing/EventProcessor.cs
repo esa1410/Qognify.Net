@@ -68,14 +68,14 @@ namespace Qognify.Processing
                     if (batch.Count > 0)
                     {
                         
-                        log.Info("STEP 01 : Transform LIST_EVENTSHARED to Dictionary DICT_Events");
+                        log.Info("STEP 01 : Transform LIST_EVENTSHARED Fixed Width to Dictionary DICT_Events");
 
-                        // 1) parse_fixed_width
+                        // 1) Découpage du contenu batch (Queue) fixed_width en Dictioaniare
                         var dictEvents = FixedWidthParser.Parse(batch, _fields);
 
                         // 2) build_to_send
-                        Console.WriteLine("STEP 02 : Traitement des données dans DICT_Events");
-                        //log.Info("STEP 02 : Traitement des données dans DICT_Events");
+                        //Console.WriteLine("STEP 02 : Traitement des données dans DICT_Events");
+                        log.Info("STEP 02 : Traitement des données dans DICT_Events");
 
                         //string csvPath = System.IO.Path.Combine(
                         //    _settings.Files.BaseDir,
@@ -94,9 +94,11 @@ namespace Qognify.Processing
                         );
 
                         // 3) log_tosend
+                        log.Info("STEP 03 : Contenu a envoyer");
                         LogToSend.Dump(toSend);
 
                         // 4) TODO : envoyer vers VMS Qognify
+                        log.Info("STEP 04 : Envoie vers Qognify");
                     }
 
                     last = now;

@@ -5,4 +5,5 @@ bin*/
 obj*/
 packages/
 *.ps1
-
+*.sln
+*.csproj
