@@ -20,7 +20,8 @@ namespace Qognify.Processing
         // Champs nécessaires pour build_to_send
         private readonly Dictionary<string, double> _lastSentTimes = new Dictionary<string, double>();
         private readonly QognifySettings _settings;
-        string BaseDirCSV = Properties.Settings.Default.CSVFilesPathWeb;
+        public string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
+        string BaseDirCSV  = Properties.Settings.Default.CSVFilesPath;
 
         // Définition des champs FIXED-WIDTH (équivalent Python FIELDS)
         private readonly List<Tuple<string, int>> _fields = new List<Tuple<string, int>>

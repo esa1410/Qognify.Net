@@ -21,7 +21,8 @@ namespace Qognify.Processing
 
             //ddm load filter reference into filtermap
             //todo check if flag exist 
-            string FlagFile = baseDir + @"\flag";
+            string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
+            string FlagFile = CSVFilesPathWeb + @"\flag";
             bool exists = File.Exists(FlagFile);
 
             //if flag exist then reload filter
@@ -31,12 +32,15 @@ namespace Qognify.Processing
                 log.Info($"Keyname reload because change occurs");
                 if (exists)
                 {
+                    
                     if (File.Exists(FlagFile))
                     {
                         File.Delete(FlagFile);
+                        CopyFilefromWebIntoActive(CSVFilesPathWeb);
                     }
                 }
                 //todo créer une copie des fichiers
+
                 filterMap = FilterLoader.LoadFilterCsv(csvListKeynameActionPath);
 
             }
@@ -143,6 +147,25 @@ namespace Qognify.Processing
             }
 
             return toSend;
+        }
+
+        private static void CopyFilefromWebIntoActive(string sourceDir)
+        {
+            // Récupère tous les chemins de fichiers du répertoire source
+            string[] files = Directory.GetFiles(sourceDir);
+            string DestinationCsvFile = Properties.Settings.Default.CSVFilesPath;
+            
+            foreach (string file in files)
+            {
+                // Extrait uniquement le nom du fichier (ex: "photo.jpg")
+                string fileName = Path.GetFileName(file);
+                // Combine la destination avec le nom du fichier
+                string destPath = Path.Combine(DestinationCsvFile,fileName );
+
+
+                // Copie le fichier (true pour écraser si déjà présent)
+                File.Copy(file, destPath, true);
+            }
         }
     }
 }

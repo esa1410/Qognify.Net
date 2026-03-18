@@ -12,7 +12,9 @@ namespace Qognify.Processing
         public static Dictionary<string, List<Dictionary<string, string>>> LoadFilterCsv(string path)
         {
             var map = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
-
+            
+            //todo catch exception if occurs
+            //file exist or content not complain
             var lines = File.ReadAllLines(path);
             if (lines.Length <= 1)
                 return map;
