@@ -34,10 +34,28 @@ namespace Qognify.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\ProjectsVS\\Qognify.Net\\bin\\Debug")]
+        [global::System.Configuration.DefaultSettingValueAttribute("c:\\ProjectsVS\\QognityApp-v3\\Qognify.Net\\bin\\Debug")]
         public string CSVFilesPath {
             get {
                 return ((string)(this["CSVFilesPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int SendIntervalSeconds {
+            get {
+                return ((int)(this["SendIntervalSeconds"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.23")]
+        public string qognifyIp {
+            get {
+                return ((string)(this["qognifyIp"]));
             }
         }
     }

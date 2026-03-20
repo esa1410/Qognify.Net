@@ -1,8 +1,7 @@
-﻿using NLog;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 
 namespace Qognify.Processing
 {
@@ -12,11 +11,12 @@ namespace Qognify.Processing
         private static Dictionary<string, List<Dictionary<string, string>>> filterMap;
         private static readonly Logger log = Logging.LoggerFactory.GetLogger<EventProcessor>();
 
-        public static Dictionary<string, List<Dictionary<string, string>>> Build(
+        public static void Build(
             List<Dictionary<string, string>> events,
             Dictionary<string, double> lastSentTimes,
             string csvListKeynameActionPath,
-            string baseDir)
+            string baseDir,
+            Queue<OutgoingEvent> sendQueue)
         {
 
             //ddm load filter reference into filtermap
@@ -32,7 +32,6 @@ namespace Qognify.Processing
                 log.Info($"Keyname reload because change occurs");
                 if (exists)
                 {
-                    
                     if (File.Exists(FlagFile))
                     {
                         File.Delete(FlagFile);
@@ -42,16 +41,11 @@ namespace Qognify.Processing
                 //todo créer une copie des fichiers
 
                 filterMap = FilterLoader.LoadFilterCsv(csvListKeynameActionPath);
-
             }
 
 
             //ddm create alarmTypeCache dictinnary with ingnore case 
             var alarmTypeCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-            //ddm create tosend dictionary with all field 
-            var toSend = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
-
 
             foreach (var rec in events)
             {
@@ -76,30 +70,29 @@ namespace Qognify.Processing
                     foreach (var param in filterMap[key])
                     {
                         string alarmNumber = param["ALARM-NUMBER"];
-                        string port = param["PORT-TCP"];
+                        string portStr = param["PORT-TCP"];
                         int delay = int.Parse(param["DELAY-RESEND"]);
                         string csvAlm = param["CSVFILEALM"];
 
-                        log.Debug($"STEP 02 : Find a combinaison for {key} with {alarmNumber}, {port}, {csvAlm} and delay {delay} from List-Keyname-Action");
+                        log.Debug($"STEP 02 : Find a combinaison for {key} with {alarmNumber}, {portStr}, {csvAlm} and delay {delay} from List-Keyname-Action");
 
-                        string uniqueKey = $"{key}:{alarmNumber}:{port}";
+                        string uniqueKey = $"{key}:{alarmNumber}:{portStr}";
                         log.Debug($"STEP 03 : Création de Unique key {uniqueKey} pour gérer les rate-limit en fonction du paramètre délai + ignorer les key en doublons");
 
-                        log.Debug($"STEP 04 : Check des doublons et si '{key}' est déjà dans ToSend on passe au suivant");
-                        if (toSend.ContainsKey(key))
-                        {
-                            foreach (var existing in toSend[key])
-                            {
-                                string existingKey = $"{key}:{existing["ALARM-NUMBER"]}:{existing["PORT-TCP"]}";
-                                if (existingKey.Equals(uniqueKey, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    log.Debug($"STEP 04 : Check Duplicate : Unique Key {uniqueKey} already in ToSend : Skipped");
-                                    goto SkipCombination;
-                                }
-                            }
-                        }
-
-                        //to do 
+                        //ESA TODO : Refaire la gestion Doublon
+                        //log.Debug($"STEP 04 : Check des doublons et si '{key}' est déjà dans ToSend on passe au suivant");
+                        //if (toSend.ContainsKey(key))
+                        //{
+                        //    foreach (var existing in toSend[key])
+                        //    {
+                        //        string existingKey = $"{key}:{existing["ALARM-NUMBER"]}:{existing["PORT-TCP"]}";
+                        //        if (existingKey.Equals(uniqueKey, StringComparison.OrdinalIgnoreCase))
+                        //        {
+                        //            log.Debug($"STEP 04 : Check Duplicate : Unique Key {uniqueKey} already in ToSend : Skipped");
+                        //            goto SkipCombination;
+                        //        }
+                        //    }
+                        //}
                         log.Debug($"STEP 05 : Load allowed AlarmTypes for {csvAlm}");
                         if (!alarmTypeCache.ContainsKey(csvAlm))
                         {
@@ -129,24 +122,26 @@ namespace Qognify.Processing
                             lastSentTimes[uniqueKey] = now;
                         }
 
-                        log.Debug($"STEP 07 : {key} accepté pour envoie et on rajoute le PORT et le MSG à envoyer");
-                        var merged = new Dictionary<string, string>(rec);
-                        foreach (var kv in param)
-                            merged[kv.Key] = kv.Value;
+                        if (!int.TryParse(portStr, out int port))
+                        {
+                            log.Error($"PORT-TCP invalide pour {key} : {portStr}");
+                            goto SkipCombination;
+                        }
 
-                        if (!toSend.ContainsKey(key))
-                            toSend[key] = new List<Dictionary<string, string>>();
+                        log.Debug($"STEP 07 : {key} accepté pour envoie → ajout dans la file d'envoi");
 
-                        log.Debug($"STEP 07 : allowed for Send {key} with type {alarmType}");
-                        toSend[key].Add(merged);
+                        sendQueue.Enqueue(new OutgoingEvent
+                        {
+                            Keyname = key,
+                            AlarmNumber = alarmNumber,
+                            Port = port
+                        });
 
                         SkipCombination:
                         continue;
                     }
                 }
             }
-
-            return toSend;
         }
 
         private static void CopyFilefromWebIntoActive(string sourceDir)
@@ -154,7 +149,7 @@ namespace Qognify.Processing
             // Récupère tous les chemins de fichiers du répertoire source
             string[] files = Directory.GetFiles(sourceDir);
             string DestinationCsvFile = Properties.Settings.Default.CSVFilesPath;
-            
+
             foreach (string file in files)
             {
                 // Extrait uniquement le nom du fichier (ex: "photo.jpg")

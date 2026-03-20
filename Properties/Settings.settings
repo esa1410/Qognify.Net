@@ -6,7 +6,13 @@
       <Value Profile="(Default)">C:\ProjectsVS\WebAppQognify\WebQognify\CSVFile</Value>
     </Setting>
     <Setting Name="CSVFilesPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\ProjectsVS\Qognify.Net\bin\Debug</Value>
+      <Value Profile="(Default)">c:\ProjectsVS\QognityApp-v3\Qognify.Net\bin\Debug</Value>
+    </Setting>
+    <Setting Name="SendIntervalSeconds" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="qognifyIp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.23</Value>
     </Setting>
   </Settings>
 </SettingsFile>
