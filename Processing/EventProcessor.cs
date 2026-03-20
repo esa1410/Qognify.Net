@@ -28,7 +28,8 @@ namespace Qognify.Processing
         private readonly Dictionary<string, double> _lastSentTimes = new Dictionary<string, double>();
         private readonly QognifySettings _settings;
         public string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
-        string BaseDirCSV = Properties.Settings.Default.CSVFilesPath;
+        public string BaseDirCSV = AppDomain.CurrentDomain.BaseDirectory;
+      
 
         // Définition des champs FIXED-WIDTH (équivalent Python FIELDS)
         private readonly List<Tuple<string, int>> _fields = new List<Tuple<string, int>>

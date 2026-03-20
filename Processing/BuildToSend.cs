@@ -35,7 +35,7 @@ namespace Qognify.Processing
                     if (File.Exists(FlagFile))
                     {
                         File.Delete(FlagFile);
-                        CopyFilefromWebIntoActive(CSVFilesPathWeb);
+                        CopyFilefromWebIntoActive(CSVFilesPathWeb,baseDir);
                     }
                 }
                 //todo créer une copie des fichiers
@@ -121,8 +121,8 @@ namespace Qognify.Processing
                             //Délai écoulé → mise à jour du timestamp
                             lastSentTimes[uniqueKey] = now;
                         }
-
-                        if (!int.TryParse(portStr, out int port))
+                        int port;
+                        if (!int.TryParse(portStr, out  port))
                         {
                             log.Error($"PORT-TCP invalide pour {key} : {portStr}");
                             goto SkipCombination;
@@ -144,11 +144,11 @@ namespace Qognify.Processing
             }
         }
 
-        private static void CopyFilefromWebIntoActive(string sourceDir)
+        private static void CopyFilefromWebIntoActive(string sourceDir, string DestinationCsvFile )
         {
             // Récupère tous les chemins de fichiers du répertoire source
             string[] files = Directory.GetFiles(sourceDir);
-            string DestinationCsvFile = Properties.Settings.Default.CSVFilesPath;
+            //string DestinationCsvFile = Properties.Settings.Default.CSVFilesPath;
 
             foreach (string file in files)
             {

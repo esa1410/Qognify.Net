@@ -21,7 +21,7 @@ namespace Qognify
 
             /// Load Json Setting
             /// Application path
-            /// todo change for using webpath csvfile
+            /// todo change for using webpath csvfile return on basedirectoty
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             //var baseDir = @"C:\ProjectsVS\WebAppQognify\WebQognify\CSVFile";
             var settingsPath = Path.Combine(baseDir, "appsettings.json");
