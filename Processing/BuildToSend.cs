@@ -53,10 +53,10 @@ namespace Qognify.Processing
                 string eventdate = rec["DateTime"];
                 string alarmType = rec["AlarmType"];
 
-                log.Info($"STEP 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
+                log.Info($"BuildToSend 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
                 if (!filterMap.ContainsKey(key))
                 {
-                    log.Debug($"STEP 01 : Skip {key} Not in List");
+                    log.Debug($"BuildToSend 01 : Skip {key} Not in List");
                     continue;
                 }
                 //# build_to_send:STEP 02 : Si oui, alors on charge les informations pour cette Key.
@@ -74,13 +74,13 @@ namespace Qognify.Processing
                         int delay = int.Parse(param["DELAY-RESEND"]);
                         string csvAlm = param["CSVFILEALM"];
 
-                        log.Debug($"STEP 02 : Find a combinaison for {key} with {alarmNumber}, {portStr}, {csvAlm} and delay {delay} from List-Keyname-Action");
+                        log.Debug($"BuildToSend 02 : Find a combinaison for {key} with {alarmNumber}, {portStr}, {csvAlm} and delay {delay} from List-Keyname-Action");
 
                         string uniqueKey = $"{key}:{alarmNumber}:{portStr}";
-                        log.Debug($"STEP 03 : Création de Unique key {uniqueKey} pour gérer les rate-limit en fonction du paramètre délai + ignorer les key en doublons");
+                        log.Debug($"BuildToSend 03 : Création de Unique key {uniqueKey} pour gérer les rate-limit en fonction du paramètre délai + ignorer les key en doublons");
 
                         //ESA TODO : Refaire la gestion Doublon
-                        //log.Debug($"STEP 04 : Check des doublons et si '{key}' est déjà dans ToSend on passe au suivant");
+                        //log.Debug($"BuildToSend 04 : Check des doublons et si '{key}' est déjà dans ToSend on passe au suivant");
                         //if (toSend.ContainsKey(key))
                         //{
                         //    foreach (var existing in toSend[key])
@@ -88,12 +88,12 @@ namespace Qognify.Processing
                         //        string existingKey = $"{key}:{existing["ALARM-NUMBER"]}:{existing["PORT-TCP"]}";
                         //        if (existingKey.Equals(uniqueKey, StringComparison.OrdinalIgnoreCase))
                         //        {
-                        //            log.Debug($"STEP 04 : Check Duplicate : Unique Key {uniqueKey} already in ToSend : Skipped");
+                        //            log.Debug($"BuildToSend 04 : Check Duplicate : Unique Key {uniqueKey} already in ToSend : Skipped");
                         //            goto SkipCombination;
                         //        }
                         //    }
                         //}
-                        log.Debug($"STEP 05 : Load allowed AlarmTypes for {csvAlm}");
+                        log.Debug($"BuildToSend 05 : Load allowed AlarmTypes for {csvAlm}");
                         if (!alarmTypeCache.ContainsKey(csvAlm))
                         {
                             string path = Path.Combine(baseDir, csvAlm + ".csv");
@@ -102,11 +102,11 @@ namespace Qognify.Processing
 
                         if (!alarmTypeCache[csvAlm].Contains(alarmType))
                         {
-                            log.Debug($"STEP 05 : Alm Type {alarmType} is not allowed for {key} in {csvAlm} -> check in file List-Keyname-Action if other type are allowed for {key}");
+                            log.Debug($"BuildToSend 05 : Alm Type {alarmType} is not allowed for {key} in {csvAlm} -> check in file List-Keyname-Action if other type are allowed for {key}");
                             goto SkipCombination;
                         }
 
-                        log.Debug($"STEP 06 : Check si {delay} écoulé pour {key}.");
+                        log.Debug($"BuildToSend 06 : Check si délai {delay} est écoulé pour {key}.");
                         if (delay > 0)
                         {
                             double now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -115,7 +115,7 @@ namespace Qognify.Processing
 
                             if (elapsed < delay)
                             {
-                                log.Debug("Délai {delay} pas encore écoulé : {elapsed}");
+                                log.Debug($"BuildToSend 06 : Délai {delay} pas encore écoulé : {elapsed}");
                                 goto SkipCombination;
                             }
                             //Délai écoulé → mise à jour du timestamp
@@ -128,7 +128,7 @@ namespace Qognify.Processing
                             goto SkipCombination;
                         }
 
-                        log.Debug($"STEP 07 : {key} accepté pour envoie → ajout dans la file d'envoi");
+                        log.Debug($"BuildToSend 07 : {key} accepté pour envoie → ajout dans la file d'envoi");
 
                         sendQueue.Enqueue(new OutgoingEvent
                         {

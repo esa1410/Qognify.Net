@@ -64,7 +64,8 @@ namespace Qognify.Networking
             using (client)
             {
                 client.ReceiveTimeout = (int)_timeout.TotalMilliseconds;
-                var buffer = new byte[1024];
+                var buffer = new byte[1024];//1024
+                var sb = new StringBuilder();   // buffer cumulatif
 
                 try
                 {
@@ -73,17 +74,27 @@ namespace Qognify.Networking
                         int read;
                         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            var data = Encoding.UTF8.GetString(buffer, 0, read);
-                            //log.Debug($"[TCP SERVER] Received: {data}");
+                            string blocmultiline = Encoding.UTF8.GetString(buffer, 0, read);
+                            log.Debug($"[TCP SERVER] Received: {blocmultiline}");
 
-                            if (data.StartsWith("\r\n"))
-                                data = data.Substring(2);
-                            
-                            //ddm si pas de description le string est moins long
-                            var line = data;//.Trim();
-                            
-                            if (!string.IsNullOrEmpty(line))
-                                _queue.Enqueue(line);
+                            sb.Append(blocmultiline);
+
+                            string data = sb.ToString();
+                            int idx;
+                            // Tant qu’on trouve une ligne complète
+                            while ((idx = data.IndexOf("\r\n")) >= 0)
+                            {
+                                string line = data.Substring(0, idx).Trim();
+                                log.Debug($"[TCP SERVER] Ligne complète, Enqueue {line}");
+                                if (line.Length > 0)
+                                    _queue.Enqueue(line);
+
+                                data = data.Substring(idx + 2);
+                            }
+
+                            // Garder uniquement la fin incomplète
+                            sb.Clear();
+                            sb.Append(data);
 
                             if (_ct.IsCancellationRequested)
                                 break;

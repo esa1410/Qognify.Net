@@ -82,14 +82,14 @@ namespace Qognify.Processing
 
                     if (batch.Count > 0)
                     {
-                        log.Info("STEP 01 : Transform LIST_EVENTSHARED Fixed Width to Dictionary DICT_Events");
+                        log.Info("EventProcessor 01 : Transform LIST_EVENTSHARED Fixed Width to Dictionary DICT_Events");
 
                         // 1) Découpage du contenu batch (Queue) fixed_width en Dictioaniare
                         var dictEvents = FixedWidthParser.Parse(batch, _fields);
 
                         // 2) build_to_send
-                        //Console.WriteLine("STEP 02 : Traitement des données dans DICT_Events");
-                        log.Info("STEP 02 : Traitement des données dans DICT_Events");
+                        //Console.WriteLine("EventProcessor 02 : Traitement des données dans DICT_Events");
+                        log.Info("EventProcessor 02 : Traitement des données dans DICT_Events");
 
                         //string csvPath = System.IO.Path.Combine(
                         //    _settings.Files.BaseDir,
@@ -107,7 +107,7 @@ namespace Qognify.Processing
                             _sendQueue
                         );
 
-                        log.Info("STEP 03 : BuildToSend terminé, éléments ajoutés dans la file d'envoi");
+                        log.Info("EventProcessor 03 : BuildToSend terminé, éléments ajoutés dans la file d'envoi");
                     }
 
                     lastProcess = now;
@@ -116,7 +116,7 @@ namespace Qognify.Processing
                 // Envoi vers Qognify (un élément à la fois)
                 if ((now - lastSend) >= _sendInterval)
                 {
-                    TrySendOne();
+//                    TrySendOne();
                     lastSend = now;
                 }
 
@@ -142,7 +142,7 @@ namespace Qognify.Processing
 
             string qognifyIp = Properties.Settings.Default.qognifyIp;
 
-            log.Info($"STEP SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
+            log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
 
             try
             {

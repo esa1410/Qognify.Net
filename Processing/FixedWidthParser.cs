@@ -1,10 +1,12 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 
 namespace Qognify.Processing
 {
     public static class FixedWidthParser
     {
+        private static readonly Logger log = Logging.LoggerFactory.GetLogger<EventProcessor>(); 
         public static List<Dictionary<string, string>> Parse(
             List<string> lines,
             List<Tuple<string, int>> fields)
@@ -15,7 +17,7 @@ namespace Qognify.Processing
             {
                 var record = new Dictionary<string, string>();
                 int pos = 0;
-
+                log.Debug($"FixedWidthParser 01 : {line}");
                 foreach (var field in fields)
                 {
                     string name = field.Item1;
