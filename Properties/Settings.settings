@@ -11,5 +11,8 @@
     <Setting Name="qognifyIp" Type="System.String" Scope="Application">
       <Value Profile="(Default)">192.168.1.23</Value>
     </Setting>
+    <Setting Name="ExpiryNoSendSec" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

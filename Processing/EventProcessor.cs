@@ -70,6 +70,7 @@ namespace Qognify.Processing
         {
             var lastProcess = DateTime.UtcNow;
             var lastSend = DateTime.UtcNow;
+            var ExpiryNoSendSec = Properties.Settings.Default.ExpiryNoSendSec;
 
             while (!_ct.IsCancellationRequested)
             {
@@ -113,6 +114,9 @@ namespace Qognify.Processing
                     lastProcess = now;
                 }
 
+                //todo check datetime event receive for expiry
+
+
                 // Envoi vers Qognify (un élément à la fois)
                 if ((now - lastSend) >= _sendInterval)
                 {
@@ -153,5 +157,7 @@ namespace Qognify.Processing
                 log.Error(ex, $"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
             }
         }
+
+        
     }
 }
