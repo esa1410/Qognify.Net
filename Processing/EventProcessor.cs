@@ -4,6 +4,7 @@ using Qognify.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Threading;
 
 namespace Qognify.Processing
@@ -29,7 +30,7 @@ namespace Qognify.Processing
         private readonly QognifySettings _settings;
         public string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
         public string BaseDirCSV = AppDomain.CurrentDomain.BaseDirectory;
-      
+
 
         // Définition des champs FIXED-WIDTH (équivalent Python FIELDS)
         private readonly List<Tuple<string, int>> _fields = new List<Tuple<string, int>>
@@ -108,7 +109,7 @@ namespace Qognify.Processing
                             _sendQueue
                         );
 
-                        log.Info("EventProcessor 03 : BuildToSend terminé, éléments ajoutés dans la file d'envoi");
+                        log.Debug("EventProcessor 03 : BuildToSend terminé, éléments ajoutés dans la file d'envoi");
                     }
 
                     lastProcess = now;
@@ -120,7 +121,7 @@ namespace Qognify.Processing
                 // Envoi vers Qognify (un élément à la fois)
                 if ((now - lastSend) >= _sendInterval)
                 {
-//                    TrySendOne();
+                    TrySendOne();
                     lastSend = now;
                 }
 
@@ -139,6 +140,7 @@ namespace Qognify.Processing
 
         private void TrySendOne()
         {
+            bool Send2Qognify = Properties.Settings.Default.Send2Qognify;
             if (_sendQueue.Count == 0)
                 return;
 
@@ -146,18 +148,33 @@ namespace Qognify.Processing
 
             string qognifyIp = Properties.Settings.Default.qognifyIp;
 
-            log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
 
             try
             {
-                Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
+                if (Send2Qognify)
+                {
+                    bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
+                    if (SendSuccess)
+                    {
+                        log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
+                    }
+                    else
+                    {
+                        log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
+                    }
+
+                }
+                else
+                {
+                    log.Info($"[TEST MODE] Envoi vers Qognify désactivé");
+                }
             }
             catch (Exception ex)
             {
-                log.Error(ex, $"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
+                log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
             }
         }
 
-        
+
     }
 }

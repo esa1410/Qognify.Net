@@ -56,34 +56,31 @@ namespace Qognify.Processing
 
                 string dateString = ConvertDate(eventdate);
 
-                DateTime result;
+                //DateTime result;
                 
-                string format = "dd-MM-yyyy HH:mm:ss";
+                //string format = "dd-MM-yyyy HH:mm:ss";
 
-                if (DateTime.TryParseExact(dateString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out  result))
-                {
-                    //todo add for expiry time and log into no send
-                    //compare delay 
-                    Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
-                    TimeSpan difference = DateTime.Now - result;
-
-                    Console.WriteLine($"Difference {difference.Seconds }");
-
-                }
-                else
-                {
-                    Console.WriteLine("Échec de la conversion.");
-                }
-
-
-
-
-                //log.Info($"STEP 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
-                //if (!filterMap.ContainsKey(key))
+                //if (DateTime.TryParseExact(dateString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out  result))
                 //{
-                //    log.Debug($"STEP 01 : Skip {key} Not in List");
-                //    continue;
+                //    //todo add for expiry time and log into no send
+                //    //compare delay 
+                //    Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
+                //    TimeSpan difference = DateTime.Now - result;
+
+                //    Console.WriteLine($"Difference {difference.Seconds }");
+
                 //}
+                //else
+                //{
+                //    Console.WriteLine("Échec de la conversion.");
+                //}
+
+                log.Info($"BuildToSend 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
+                if (!filterMap.ContainsKey(key))
+                    {
+                        log.Debug($"STEP 01 : Skip {key} Not in List");
+                        continue;
+                    }
                 //# build_to_send:STEP 02 : Si oui, alors on charge les informations pour cette Key.
                 //# Pour une Key, il peut y avoir plusieurs combinaison PORT-TCP et Type Alm.
                 //# On parcoure la liste des combinaison pour ce Keyname : càd PORT+ALm Type

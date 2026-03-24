@@ -3,6 +3,7 @@ using Qognify.Logging;
 using Qognify.Processing;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -100,6 +101,11 @@ namespace Qognify.Networking
                                 break;
                         }
                     }
+                }
+                catch (IOException ioEx) when (ioEx.InnerException is SocketException sockEx &&
+                              sockEx.SocketErrorCode == SocketError.TimedOut)
+                {
+                    log.Error($"[TCP SERVER] Receive timeout after {_timeout.TotalSeconds} seconds — no data received.");
                 }
                 catch (Exception ex)
                 {
