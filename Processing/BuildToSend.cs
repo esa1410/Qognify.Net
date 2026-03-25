@@ -54,33 +54,17 @@ namespace Qognify.Processing
                 string eventdate = rec["DateTime"];
                 string alarmType = rec["AlarmType"];
 
-                string dateString = ConvertDate(eventdate);
-
-                //DateTime result;
-                
-                //string format = "dd-MM-yyyy HH:mm:ss";
-
-                //if (DateTime.TryParseExact(dateString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out  result))
-                //{
-                //    //todo add for expiry time and log into no send
-                //    //compare delay 
-                //    Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
-                //    TimeSpan difference = DateTime.Now - result;
-
-                //    Console.WriteLine($"Difference {difference.Seconds }");
-
-                //}
-                //else
-                //{
-                //    Console.WriteLine("Échec de la conversion.");
-                //}
+                //todo concerne date de l'evenement savoir si le delay d'expiration est dépassé
+                //on fait quoi on ignore mais une information est placée dans le log faut-il y ajouter le delay qui est dépassé
+                DateTime result;
+                result = ConvertDate(eventdate);
 
                 log.Info($"BuildToSend 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
                 if (!filterMap.ContainsKey(key))
-                    {
-                        log.Debug($"STEP 01 : Skip {key} Not in List");
-                        continue;
-                    }
+                {
+                    log.Debug($"STEP 01 : Skip {key} Not in List");
+                    continue;
+                }
                 //# build_to_send:STEP 02 : Si oui, alors on charge les informations pour cette Key.
                 //# Pour une Key, il peut y avoir plusieurs combinaison PORT-TCP et Type Alm.
                 //# On parcoure la liste des combinaison pour ce Keyname : càd PORT+ALm Type
@@ -144,7 +128,7 @@ namespace Qognify.Processing
                             lastSentTimes[uniqueKey] = now;
                         }
                         int port;
-                        if (!int.TryParse(portStr, out  port))
+                        if (!int.TryParse(portStr, out port))
                         {
                             log.Error($"PORT-TCP invalide pour {key} : {portStr}");
                             goto SkipCombination;
@@ -162,8 +146,32 @@ namespace Qognify.Processing
                         SkipCombination:
                         continue;
                     }
-                }
+                }//ddm ignore receive with ACK and OK
             }
+        }
+
+        private static DateTime ConvertDate(string eventdate)
+        {
+            DateTime result;
+            string format = "dd-MMM-yy  HH:mm:ss";
+            int ExpiryNoSendSec = Properties.Settings.Default.ExpiryNoSendSec;
+
+            if (DateTime.TryParseExact(eventdate, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
+            {
+                //todo add for expiry time and log into no send
+                //compare delay 
+               // Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
+                TimeSpan difference = DateTime.Now - result;
+
+                //Console.WriteLine($"Difference {difference.Seconds }");
+
+            }
+            else
+            {
+                //Console.WriteLine("Échec de la conversion.");
+            }
+
+            return result;
         }
 
         private static void CopyFilefromWebIntoActive(string sourceDir, string DestinationCsvFile )
@@ -184,33 +192,36 @@ namespace Qognify.Processing
                 File.Copy(file, destPath, true);
             }
         }
+        /// <summary>
+        /// Convertion date from EBI old release
+        /// </summary>
+        /// <param name="MyDate"></param>
+        /// <returns></returns>
+        //public static string ConvertDate(string MyDate)
+        //{
+        //    string[] MYMonth = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        //    string strdate = MyDate.Substring(0, 9);
 
-        public static string ConvertDate(string MyDate)
-        {
-            string[] MYMonth = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-            string strdate = MyDate.Substring(0, 9);
+        //    string[] ext = strdate.Split('-');
+        //    int MYear;
+        //    string MMonth;
+        //    int MDay;
+        //    string strHours = MyDate.Substring(11, 8);
 
-            string[] ext = strdate.Split('-');
-            int MYear;
-            string MMonth;
-            int MDay;
-            string strHours = MyDate.Substring(11, 8);
+        //    string tmp="";
+ 
+        //    if (ext.Length == 3)
+        //    {
+        //        MDay = int.Parse(ext[0].ToString());
+        //        MMonth = ext[1];
+        //        MYear = int.Parse(ext[2].ToString());
+        //        int nMonth = Array.IndexOf(MYMonth, MMonth);
+        //        nMonth++;
+        //        tmp = string.Format("{0:#00}-", MDay) + string.Format("{0:#00}-", nMonth) + string.Format("2{0:#000}", MYear);
+        //        tmp = tmp + " " + strHours;
+        //    }
+        //    return tmp;
 
-            string tmp="";
-            
-
-            if (ext.Length == 3)
-            {
-                MDay = int.Parse(ext[0].ToString());
-                MMonth = ext[1];
-                MYear = int.Parse(ext[2].ToString());
-                int nMonth = Array.IndexOf(MYMonth, MMonth);
-                nMonth++;
-                tmp = string.Format("{0:#00}-", MDay) + string.Format("{0:#00}-", nMonth) + string.Format("2{0:#000}", MYear);
-                tmp = tmp + " " + strHours;
-            }
-            return tmp;
-
-        }
+        //}
     }
 }

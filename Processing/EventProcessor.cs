@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Qognify.Processing
 {
@@ -119,9 +120,15 @@ namespace Qognify.Processing
 
 
                 // Envoi vers Qognify (un élément à la fois)
+                //ddm create thread in place 
                 if ((now - lastSend) >= _sendInterval)
                 {
-                    TrySendOne();
+                    //TrySendOne();
+                    if (_sendQueue.Count > 0)
+                    {
+                        Task.Run(() => { TrySendOne(); });
+                    }
+
                     lastSend = now;
                 }
 
@@ -138,42 +145,47 @@ namespace Qognify.Processing
             return list;
         }
 
+
         private void TrySendOne()
         {
             bool Send2Qognify = Properties.Settings.Default.Send2Qognify;
             if (_sendQueue.Count == 0)
                 return;
-
-            var evt = _sendQueue.Dequeue();
-
-            string qognifyIp = Properties.Settings.Default.qognifyIp;
-
-
-            try
+            while ((_sendQueue.Count > 0))
             {
-                if (Send2Qognify)
+                var evt = _sendQueue.Dequeue();
+
+                string qognifyIp = Properties.Settings.Default.qognifyIp;
+
+                try
                 {
-                    bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
-                    if (SendSuccess)
+                    if (Send2Qognify)
                     {
-                        log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
+                        bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
+                        if (SendSuccess)
+                        {
+                            log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
+                        }
+                        else
+                        {
+                            log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
+                        }
+
                     }
                     else
                     {
-                        log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
+                        log.Info($"[TEST MODE] Envoi vers Qognify désactivé key={evt.Keyname}");
                     }
-
                 }
-                else
+                catch (Exception ex)
                 {
-                    log.Info($"[TEST MODE] Envoi vers Qognify désactivé");
+                    log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
                 }
+                Thread.Sleep(500);
             }
-            catch (Exception ex)
-            {
-                log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
-            }
+
         }
+
 
 
     }

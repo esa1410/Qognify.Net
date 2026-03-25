@@ -85,7 +85,9 @@ namespace Qognify.Networking
                             // Tant qu’on trouve une ligne complète
                             while ((idx = data.IndexOf("\r\n")) >= 0)
                             {
-                                string line = data.Substring(0, idx).Trim();
+                                //ddm ne pas faire de trim sur la ligne suivante
+                                //string line = data.Substring(0, idx).Trim();
+                                string line = data.Substring(0, idx);
                                 log.Debug($"[TCP SERVER] Ligne complète, Enqueue {line}");
                                 if (line.Length > 0)
                                     _queue.Enqueue(line);
@@ -102,11 +104,11 @@ namespace Qognify.Networking
                         }
                     }
                 }
-                catch (IOException ioEx) when (ioEx.InnerException is SocketException sockEx &&
-                              sockEx.SocketErrorCode == SocketError.TimedOut)
-                {
-                    log.Error($"[TCP SERVER] Receive timeout after {_timeout.TotalSeconds} seconds — no data received.");
-                }
+                //catch (IOException ioEx) when (ioEx.InnerException is SocketException sockEx &&
+                //              sockEx.SocketErrorCode == SocketError.TimedOut)
+                //{
+                //    log.Error($"[TCP SERVER] Receive timeout after {_timeout.TotalSeconds} seconds — no data received.");
+                //}
                 catch (Exception ex)
                 {
                     log.Error("Client error: " + ex);
