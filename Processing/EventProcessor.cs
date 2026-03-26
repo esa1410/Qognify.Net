@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Qognify.Processing
 {
@@ -136,9 +137,15 @@ namespace Qognify.Processing
                 //todo check datetime event receive for expiry
 
                 // Envoi vers Qognify (un élément à la fois)
+                //ddm create thread in place 
                 if ((now - lastSend) >= _sendInterval)
                 {
-                    TrySendOne();
+                    //TrySendOne();
+                    if (_sendQueue.Count > 0)
+                    {
+                        Task.Run(() => { TrySendOne(); });
+                    }
+
                     lastSend = now;
                 }
 
@@ -157,6 +164,7 @@ namespace Qognify.Processing
             }
             return list;
         }
+
 
         private void TrySendOne()
         {
@@ -194,12 +202,14 @@ namespace Qognify.Processing
                         Port = Properties.Settings.Default.TcpPortSystem
                     });
                 }
+                Thread.Sleep(500);
             }
             catch (Exception ex)
             {
                 log.Error($"EventProcessor : Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
             }
         }
+
 
 
     }

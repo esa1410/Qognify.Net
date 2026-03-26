@@ -34,7 +34,7 @@ namespace Qognify.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
         public int SendIntervalSeconds {
             get {
                 return ((int)(this["SendIntervalSeconds"]));
@@ -53,9 +53,9 @@ namespace Qognify.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("10")]
-        public int ExpiryNoSendSecToDEL {
+        public int PurgeEventGapSec {
             get {
-                return ((int)(this["ExpiryNoSendSecToDEL"]));
+                return ((int)(this["PurgeEventGapSec"]));
             }
         }
         

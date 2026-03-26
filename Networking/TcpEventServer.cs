@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Qognify.Networking
 {
@@ -104,8 +103,10 @@ namespace Qognify.Networking
                             // Tant qu’on trouve une ligne complète
                             while ((idx = data.IndexOf("\r\n")) >= 0)
                             {
-                                string line = data.Substring(0, idx).Trim();
-                                log.Debug($"TcpEventServer : Ligne complète, Enqueue {line}");
+                                //ddm ne pas faire de trim sur la ligne suivante
+                                //string line = data.Substring(0, idx).Trim();
+                                string line = data.Substring(0, idx);
+                                log.Debug($"[TCP SERVER] Ligne complète, Enqueue {line}");
                                 if (line.Length > 0)
                                     _queue.Enqueue(line);
 
