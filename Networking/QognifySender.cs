@@ -24,7 +24,7 @@ namespace Qognify.Networking
 
                     if (!connectTask.Wait(TimeSpan.FromSeconds(Send2QognifyTimeOutSec)))
                     {
-                        log.Warn($"Timeout de connexion vers {ip}:{port}");
+                        log.Warn($"QognifySender : Timeout de connexion vers {ip}:{port}");
                         return _Send;
                     }
 
@@ -40,7 +40,7 @@ namespace Qognify.Networking
             }
             catch (Exception ex)
             {
-                log.Error($"Erreur lors de l'envoi vers {ip}:{port} message={ex.Message}");
+                log.Error($"QognifySender : Erreur lors de l'envoi vers {ip}:{port} message={ex.Message}");
                 //ESA : SendQueueSystem msg SYSTEM (PORT 40000 + MSG "connexion : elements perdu") + variable LifeCheck.
                 //throw;
             }

@@ -34,7 +34,7 @@ namespace Qognify.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
         public int SendIntervalSeconds {
             get {
                 return ((int)(this["SendIntervalSeconds"]));
@@ -53,9 +53,9 @@ namespace Qognify.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("10")]
-        public int ExpiryNoSendSec {
+        public int ExpiryNoSendSecToDEL {
             get {
-                return ((int)(this["ExpiryNoSendSec"]));
+                return ((int)(this["ExpiryNoSendSecToDEL"]));
             }
         }
         
@@ -74,6 +74,33 @@ namespace Qognify.Properties {
         public int Send2QognifyTimeOutSec {
             get {
                 return ((int)(this["Send2QognifyTimeOutSec"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int ServerTimeoutSeconds {
+            get {
+                return ((int)(this["ServerTimeoutSeconds"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int ProcessIntervalSeconds {
+            get {
+                return ((int)(this["ProcessIntervalSeconds"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("40000")]
+        public int TcpPortSystem {
+            get {
+                return ((int)(this["TcpPortSystem"]));
             }
         }
     }

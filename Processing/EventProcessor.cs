@@ -25,6 +25,9 @@ namespace Qognify.Processing
         private readonly TimeSpan _sendInterval; // interval d'envoi
         private readonly CancellationToken _ct;
 
+        // Variable pour suivre le dernier événement reçu (pour la logique d'expiration)
+        private DateTime _lastEventReceived = DateTime.UtcNow;
+
         // Champs nécessaires pour build_to_send
         private readonly Dictionary<string, double> _lastSentTimes = new Dictionary<string, double>();
         private readonly QognifySettings _settings;
@@ -46,6 +49,7 @@ namespace Qognify.Processing
 
         // File d'envoi interne (un seul thread → Queue simple)
         private readonly Queue<OutgoingEvent> _sendQueue = new Queue<OutgoingEvent>();
+        private readonly Queue<OutgoingEvent> _sendQueueSystem = new Queue<OutgoingEvent>();
 
         public EventProcessor(
             ConcurrentQueue<string> queue,
@@ -71,11 +75,25 @@ namespace Qognify.Processing
         {
             var lastProcess = DateTime.UtcNow;
             var lastSend = DateTime.UtcNow;
-            var ExpiryNoSendSec = Properties.Settings.Default.ExpiryNoSendSec;
+            var ServerTimeoutSeconds = Properties.Settings.Default.ServerTimeoutSeconds;
 
             while (!_ct.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
+
+                // Vérification de l'expiration (absence d'événements reçus)
+                if ((now - _lastEventReceived).TotalSeconds > ServerTimeoutSeconds)
+                {
+                    log.Warn($"EventProcessor : Aucun événement reçu depuis {ServerTimeoutSeconds} sec -> ALM SYSTEM Generated");
+                    // Ajouter un événement système dans la file
+                    _sendQueueSystem.Enqueue(new OutgoingEvent
+                    {
+                        Keyname = "SYSTEM.NO_EVENT",
+                        AlarmNumber = "SYS001-NO_EVENT-FromEBI",
+                        Port = Properties.Settings.Default.TcpPortSystem
+                    });
+                    _lastEventReceived = now;
+                }
 
                 // Traitement des événements (parse + build)
                 if ((now - lastProcess) >= _interval)
@@ -117,7 +135,6 @@ namespace Qognify.Processing
 
                 //todo check datetime event receive for expiry
 
-
                 // Envoi vers Qognify (un élément à la fois)
                 if ((now - lastSend) >= _sendInterval)
                 {
@@ -134,44 +151,53 @@ namespace Qognify.Processing
             var list = new List<string>();
             string item;
             while (_queue.TryDequeue(out item))
+            {
                 list.Add(item);
+                _lastEventReceived = DateTime.UtcNow;// Mise à jour du timestamp du dernier événement reçu
+            }
             return list;
         }
 
         private void TrySendOne()
         {
+            string qognifyIp = Properties.Settings.Default.qognifyIp;
             bool Send2Qognify = Properties.Settings.Default.Send2Qognify;
-            if (_sendQueue.Count == 0)
+
+            OutgoingEvent evt = null;
+            log.Info($"EventProcessor : Tentative d'envoi vers Qognify - Files d'envoi : System={_sendQueueSystem.Count}, Normal={_sendQueue.Count}");
+            // Priorité aux événements système
+            if (_sendQueueSystem.Count > 0)
+                evt = _sendQueueSystem.Dequeue();
+            else if (_sendQueue.Count > 0)
+                evt = _sendQueue.Dequeue();
+            else
                 return;
 
-            var evt = _sendQueue.Dequeue();
+            log.Info($"EventProcessor SEND : Dequeue - envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
 
-            string qognifyIp = Properties.Settings.Default.qognifyIp;
-
+            if (!Send2Qognify)
+            {
+                log.Info($"EventProcessor : [TEST MODE] Envoi vers Qognify désactivé");
+                return;
+            }
 
             try
             {
-                if (Send2Qognify)
+                bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
+                if (!SendSuccess)
                 {
-                    bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
-                    if (SendSuccess)
+                    log.Warn($"EventProcessor : Echec lors de l'envoi vers Qognify KEY={evt.Keyname}");
+                    _sendQueueSystem.Enqueue(new OutgoingEvent
                     {
-                        log.Info($"EventProcessor SEND : Envoi vers Qognify → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
-                    }
-                    else
-                    {
-                        log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname}");
-                    }
-
-                }
-                else
-                {
-                    log.Info($"[TEST MODE] Envoi vers Qognify désactivé");
+                        Keyname = "SYSTEM.CLIENT_DISCONNECTED",
+                        AlarmNumber = "9002",
+                        Port = Properties.Settings.Default.TcpPortSystem
+                    });
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
+                log.Error($"EventProcessor : Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
             }
         }
 

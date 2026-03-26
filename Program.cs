@@ -52,12 +52,12 @@ namespace Qognify
                 IPAddress.Parse(settings.TcpServer.Host),
                 settings.TcpServer.Port,
                 queue,
-                TimeSpan.FromSeconds(settings.TcpServer.ServerTimeoutSeconds),
+                TimeSpan.FromSeconds(Properties.Settings.Default.ServerTimeoutSeconds),
                 cts.Token);
 
             var processor = new EventProcessor(
                 queue,
-                TimeSpan.FromSeconds(settings.TcpServer.ProcessIntervalSeconds),
+                TimeSpan.FromSeconds(Properties.Settings.Default.ProcessIntervalSeconds),
                 cts.Token,
                 settings   // ← 4th argument added
             );

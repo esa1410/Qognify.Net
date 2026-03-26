@@ -124,7 +124,7 @@ namespace Qognify.Processing
 
                         if (!alarmTypeCache[csvAlm].Contains(alarmType))
                         {
-                            log.Debug($"BuildToSend 05 : Alm Type {alarmType} is not allowed for {key} in {csvAlm} -> check in file List-Keyname-Action if other type are allowed for {key}");
+                            log.Debug($"BuildToSend 05 : (-) Alm Type {alarmType} n'est pas accepté {key} in {csvAlm} -> check in file List-Keyname-Action if other type are allowed for {key}");
                             goto SkipCombination;
                         }
 
@@ -137,7 +137,8 @@ namespace Qognify.Processing
 
                             if (elapsed < delay)
                             {
-                                log.Debug($"BuildToSend 06 : Délai {delay} pas encore écoulé : {elapsed}");
+                                log.Debug($"BuildToSend 06 : (-) Délai {delay} pas encore écoulé : {elapsed} pour {uniqueKey}");
+                                //log.Debug($"BuildToSend 06 : Délai {delay} pas encore écoulé : {elapsed}");
                                 goto SkipCombination;
                             }
                             //Délai écoulé → mise à jour du timestamp
@@ -150,7 +151,7 @@ namespace Qognify.Processing
                             goto SkipCombination;
                         }
 
-                        log.Debug($"BuildToSend 07 : {key} accepté pour envoie → ajout dans la file d'envoi");
+                        log.Debug($"BuildToSend 07 : (+) {key} est accepté pour envoie → ajout dans la file d'envoi");
 
                         sendQueue.Enqueue(new OutgoingEvent
                         {

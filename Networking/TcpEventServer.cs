@@ -8,12 +8,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Qognify.Networking
 {
     public class TcpEventServer : IDisposable
     {
-        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>(); 
+        private static readonly Logger log = LoggerFactory.GetLogger<EventProcessor>();
         private readonly TcpListener _listener;
         private readonly ConcurrentQueue<string> _queue;
         private readonly TimeSpan _timeout;
@@ -38,18 +39,22 @@ namespace Qognify.Networking
             ThreadPool.QueueUserWorkItem(_ => AcceptLoop());
         }
 
+        //Attendre une connexion d'un client TCP
         private void AcceptLoop()
         {
             try
             {
                 while (!_ct.IsCancellationRequested)
                 {
+                    //_listener.Pending() signifie : “Est ce qu’un client tente de se connecter ?”
+                    // C'est une boucle qui tourne en permanence et relance un Handle si nécessaire.
                     if (!_listener.Pending())
                     {
-                        Thread.Sleep(100);
+                        Thread.Sleep(100);//Nml : 100
+                        //log.Debug("TcpEventServer : Check de connexion d'un client");
                         continue;
                     }
-
+                    log.Debug("TcpEventServer : Connexion acceptée et démarrage HandleClient ");
                     var client = _listener.AcceptTcpClient();
                     ThreadPool.QueueUserWorkItem(_ => HandleClient(client));
                 }
@@ -62,21 +67,35 @@ namespace Qognify.Networking
 
         private void HandleClient(TcpClient client)
         {
-            using (client)
-            {
-                client.ReceiveTimeout = (int)_timeout.TotalMilliseconds;
-                var buffer = new byte[1024];//1024
-                var sb = new StringBuilder();   // buffer cumulatif
+            var buffer = new byte[1024];//1024
+            var sb = new StringBuilder();   // buffer cumulatif
 
-                try
+            try
+            {
+                using (client)
+                using (var stream = client.GetStream())
                 {
-                    using (var stream = client.GetStream())
+                    int read;
+                    // Petit timeout tentative de lecture chaque x ms
+                    client.ReceiveTimeout = 200;
+                    DateTime lastReceive = DateTime.UtcNow;
+
+                    while (!_ct.IsCancellationRequested)
                     {
-                        int read;
-                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        // Check si réception dans le délai "ServerTimeoutSeconds". Attention, uniquement si Client n'a pas coupé la connexion.
+                        if ((DateTime.UtcNow - lastReceive) > _timeout)
                         {
+                            log.Warn($"TcpEventServer : No data received for {_timeout.TotalSeconds} seconds — timeout");
+                            lastReceive = DateTime.UtcNow; // reset du watchdog
+                            continue;
+                        }
+                        try
+                        {
+                            read = stream.Read(buffer, 0, buffer.Length);
+                            lastReceive = DateTime.UtcNow; // reset du watchdog
+
                             string blocmultiline = Encoding.UTF8.GetString(buffer, 0, read);
-                            log.Debug($"[TCP SERVER] Received: {blocmultiline}");
+                            log.Debug($"TcpEventServer : Received: {blocmultiline}");
 
                             sb.Append(blocmultiline);
 
@@ -86,7 +105,7 @@ namespace Qognify.Networking
                             while ((idx = data.IndexOf("\r\n")) >= 0)
                             {
                                 string line = data.Substring(0, idx).Trim();
-                                log.Debug($"[TCP SERVER] Ligne complète, Enqueue {line}");
+                                log.Debug($"TcpEventServer : Ligne complète, Enqueue {line}");
                                 if (line.Length > 0)
                                     _queue.Enqueue(line);
 
@@ -96,22 +115,28 @@ namespace Qognify.Networking
                             // Garder uniquement la fin incomplète
                             sb.Clear();
                             sb.Append(data);
-
-                            if (_ct.IsCancellationRequested)
-                                break;
                         }
+                        catch (IOException)
+                        {
+                            // Read() a expiré → pas de réception. L'erreur doit être capturée pour ne pas planter le Handle. On continue.
+                            //log.Debug($"TcpEventServer : Read expiré");
+                            continue;
+                        }
+
+                        if (read == 0)
+                        {
+                            log.Debug($"[TCP SERVER] client close the connexion - disconnected");
+                            break; // client disconnected
+                        }
+
                     }
                 }
-                catch (IOException ioEx) when (ioEx.InnerException is SocketException sockEx &&
-                              sockEx.SocketErrorCode == SocketError.TimedOut)
-                {
-                    log.Error($"[TCP SERVER] Receive timeout after {_timeout.TotalSeconds} seconds — no data received.");
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Client error: " + ex);
-                }
             }
+            catch (Exception ex)
+            {
+                log.Error("[TCP SERVER] Unhandled exception in HandleClient: " + ex);
+            }
+
         }
 
         public void Dispose()

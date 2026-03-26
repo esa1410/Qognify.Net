@@ -6,12 +6,12 @@
       <Value Profile="(Default)">C:\ProjectsVS\WebAppQognify\WebQognify\CSVFile</Value>
     </Setting>
     <Setting Name="SendIntervalSeconds" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">3</Value>
     </Setting>
     <Setting Name="qognifyIp" Type="System.String" Scope="Application">
       <Value Profile="(Default)">192.168.1.23</Value>
     </Setting>
-    <Setting Name="ExpiryNoSendSec" Type="System.Int32" Scope="Application">
+    <Setting Name="ExpiryNoSendSecToDEL" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">10</Value>
     </Setting>
     <Setting Name="Send2Qognify" Type="System.Boolean" Scope="Application">
@@ -19,6 +19,15 @@
     </Setting>
     <Setting Name="Send2QognifyTimeOutSec" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="ServerTimeoutSeconds" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="ProcessIntervalSeconds" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="TcpPortSystem" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">40000</Value>
     </Setting>
   </Settings>
 </SettingsFile>
