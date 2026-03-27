@@ -34,16 +34,16 @@ namespace Qognify.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("20")]
-        public int SendIntervalSeconds {
+        [global::System.Configuration.DefaultSettingValueAttribute("3000")]
+        public int SendIntervalMilliSeconds {
             get {
-                return ((int)(this["SendIntervalSeconds"]));
+                return ((int)(this["SendIntervalMilliSeconds"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.23")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.104")]
         public string qognifyIp {
             get {
                 return ((string)(this["qognifyIp"]));
@@ -101,6 +101,33 @@ namespace Qognify.Properties {
         public int TcpPortSystem {
             get {
                 return ((int)(this["TcpPortSystem"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.0.0.0")]
+        public string TCPServerHost {
+            get {
+                return ((string)(this["TCPServerHost"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("9110")]
+        public int TCPServerPort {
+            get {
+                return ((int)(this["TCPServerPort"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("List-Keyname-Action.csv")]
+        public string CsvListKeynameAction {
+            get {
+                return ((string)(this["CsvListKeynameAction"]));
             }
         }
     }

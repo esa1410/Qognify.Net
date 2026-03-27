@@ -5,11 +5,11 @@
     <Setting Name="CSVFilesPathWeb" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\ProjectsVS\WebAppQognify\WebQognify\CSVFile</Value>
     </Setting>
-    <Setting Name="SendIntervalSeconds" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">20</Value>
+    <Setting Name="SendIntervalMilliSeconds" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">3000</Value>
     </Setting>
     <Setting Name="qognifyIp" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">192.168.1.23</Value>
+      <Value Profile="(Default)">192.168.1.104</Value>
     </Setting>
     <Setting Name="PurgeEventGapSec" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">10</Value>
@@ -28,6 +28,15 @@
     </Setting>
     <Setting Name="TcpPortSystem" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">40000</Value>
+    </Setting>
+    <Setting Name="TCPServerHost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">0.0.0.0</Value>
+    </Setting>
+    <Setting Name="TCPServerPort" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">9110</Value>
+    </Setting>
+    <Setting Name="CsvListKeynameAction" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">List-Keyname-Action.csv</Value>
     </Setting>
   </Settings>
 </SettingsFile>

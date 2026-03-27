@@ -18,7 +18,7 @@ namespace Qognify.Networking
         private readonly ConcurrentQueue<string> _queue;
         private readonly TimeSpan _timeout;
         private readonly CancellationToken _ct;
-
+        
         public TcpEventServer(
             IPAddress ip,
             int port,
@@ -34,7 +34,41 @@ namespace Qognify.Networking
 
         public void Start()
         {
-            _listener.Start();
+            while (true)
+            {
+                try
+                {
+                    // Permet de réutiliser le port si c'est TON process précédent (TIME_WAIT)
+                    _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+                    _listener.Start();
+                    log.Info($"TCP Server démarré sur {_listener.LocalEndpoint}");
+
+                    // Si on arrive ici, le serveur a démarré → on sort de la boucle
+                    break;
+                }
+                catch (SocketException ex)
+                {
+                    if (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+                    {
+                        log.Error($"Port déjà utilisé par un autre process. Nouvelle tentative dans 10 secondes...");
+                    }
+                    else
+                    {
+                        log.Error($"Erreur Socket lors du démarrage du serveur TCP : {ex}");
+                    }
+
+                    // Attendre avant de retenter
+                    Thread.Sleep(5000);
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Erreur inattendue lors du démarrage du serveur TCP : {ex}");
+                    Thread.Sleep(10000);
+                }
+            }
+
+            // Si on arrive ici, le serveur a démarré correctement
             ThreadPool.QueueUserWorkItem(_ => AcceptLoop());
         }
 

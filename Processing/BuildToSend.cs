@@ -1,5 +1,7 @@
 using NLog;
+using NLog.LayoutRenderers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,9 +17,9 @@ namespace Qognify.Processing
         public static void Build(
             List<Dictionary<string, string>> events,
             Dictionary<string, double> lastSentTimes,
-            string csvListKeynameActionPath,
-            string baseDir,
-            Queue<OutgoingEvent> sendQueue)
+            //string csvListKeynameActionPath,
+            //string baseDir,
+            ConcurrentQueue<OutgoingEvent> sendQueue)
         {
 
             //ddm load filter reference into filtermap
@@ -25,6 +27,8 @@ namespace Qognify.Processing
             string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
             string FlagFile = CSVFilesPathWeb + @"\flag";
             bool exists = File.Exists(FlagFile);
+            string baseDir = Program.baseDir;
+            string csvListKeynameActionPath = Path.Combine(Program.baseDir, Properties.Settings.Default.CsvListKeynameAction);
 
             //if flag exist then reload filter
             if (filterMap == null || exists)
