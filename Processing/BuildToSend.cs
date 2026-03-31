@@ -57,11 +57,12 @@ namespace Qognify.Processing
                 string key = rec["Keyname"];
                 string eventdate = rec["DateTime"];
                 string alarmType = rec["AlarmType"];
+                 
 
                 //todo concerne date de l'evenement savoir si le delay d'expiration est dépassé
                 //on fait quoi on ignore mais une information est placée dans le log faut-il y ajouter le delay qui est dépassé
-                DateTime result;
-                result = ConvertDate(eventdate);
+               // DateTime _EventDatetime;
+               //_EventDatetime EventDatetime = ConvertDate(eventdate);
 
                 log.Info($"BuildToSend 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
                 if (!filterMap.ContainsKey(key))
@@ -140,12 +141,13 @@ namespace Qognify.Processing
                         }
 
                         log.Debug($"BuildToSend 07 : (+) {key} est accepté pour envoie → ajout dans la file d'envoi");
-
+                        //todo ddm gestion de l'erreur si la date de l'événement n'est pas correct
                         sendQueue.Enqueue(new OutgoingEvent
                         {
                             Keyname = key,
                             AlarmNumber = alarmNumber,
-                            Port = port
+                            Port = port,
+                            EventDatetime= ConvertDate(eventdate)
                         });
 
                         SkipCombination:
@@ -166,7 +168,7 @@ namespace Qognify.Processing
                 //todo add for expiry time and log into no send
                 //compare delay 
                // Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
-                TimeSpan difference = DateTime.Now - result;
+                TimeSpan difference = DateTime.UtcNow - result;
 
                 //Console.WriteLine($"Difference {difference.Seconds }");
 
@@ -197,36 +199,6 @@ namespace Qognify.Processing
                 File.Copy(file, destPath, true);
             }
         }
-        /// <summary>
-        /// Convertion date from EBI old release
-        /// </summary>
-        /// <param name="MyDate"></param>
-        /// <returns></returns>
-        //public static string ConvertDate(string MyDate)
-        //{
-        //    string[] MYMonth = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        //    string strdate = MyDate.Substring(0, 9);
-
-        //    string[] ext = strdate.Split('-');
-        //    int MYear;
-        //    string MMonth;
-        //    int MDay;
-        //    string strHours = MyDate.Substring(11, 8);
-
-        //    string tmp="";
- 
-        //    if (ext.Length == 3)
-        //    {
-        //        MDay = int.Parse(ext[0].ToString());
-        //        MMonth = ext[1];
-        //        MYear = int.Parse(ext[2].ToString());
-        //        int nMonth = Array.IndexOf(MYMonth, MMonth);
-        //        nMonth++;
-        //        tmp = string.Format("{0:#00}-", MDay) + string.Format("{0:#00}-", nMonth) + string.Format("2{0:#000}", MYear);
-        //        tmp = tmp + " " + strHours;
-        //    }
-        //    return tmp;
-
-        //}
+        
     }
 }

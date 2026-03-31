@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 namespace Qognify.Config
 {
@@ -39,18 +39,18 @@ namespace Qognify.Config
         public string LoggerName { get; set; }
     }
     
-    public static class AppSettingsLoader
-    {
-        public static QognifySettings Load(string path)
-        {
-            var json = File.ReadAllText(path);
+    //public static class AppSettingsLoader
+    //{
+    //    public static QognifySettings Load(string path)
+    //    {
+    //        var json = File.ReadAllText(path);
 
-            var root = JsonConvert.DeserializeObject<RootConfig>(json);
+    //        var root = JsonConvert.DeserializeObject<RootConfig>(json);
 
-            if (root == null || root.Qognify == null)
-                throw new InvalidDataException("Invalid appsettings.json structure: missing 'Qognify' root node.");
+    //        if (root == null || root.Qognify == null)
+    //            throw new InvalidDataException("Invalid appsettings.json structure: missing 'Qognify' root node.");
 
-            return root.Qognify;
-        }
-    }
+    //        return root.Qognify;
+    //    }
+    //}
 }

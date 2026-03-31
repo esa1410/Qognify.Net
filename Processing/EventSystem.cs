@@ -27,7 +27,7 @@ namespace Qognify.Processing
             {
                 Keyname = keyname,
                 AlarmNumber = alarmNumber,
-                Port = port
+                Port = port,EventDatetime= System.DateTime.UtcNow
             });
         }
     }

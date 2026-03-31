@@ -15,6 +15,7 @@ namespace Qognify.Processing
         public string Keyname { get; set; }
         public string AlarmNumber { get; set; }
         public int Port { get; set; }
+        public DateTime EventDatetime { get; set; } //append for date time event
     }
 
     public class EventProcessor
