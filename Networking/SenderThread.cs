@@ -63,9 +63,9 @@ namespace Qognify.Processing
             string qognifyIp = Properties.Settings.Default.qognifyIp;
             bool Send2Qognify = Properties.Settings.Default.Send2Qognify;
             int PurgeEventGapSec = Properties.Settings.Default.PurgeEventGapSec;
+            bool currentEventNormal = false;
 
             OutgoingEvent evt;
-            log.Info($"SenderThread : Tentative d'envoi vers Qognify - Files d'envoi : System={_queueSystem.Count}, Normal={_queueNormal.Count}");
 
             // Priorité aux événements système ==> à changer ? et mettre un delay pour envoyer les event system chaque x minutes.
             if (!_queueNormal.TryDequeue(out evt))
@@ -75,49 +75,61 @@ namespace Qognify.Processing
                     return; // rien à envoyer
                 }
             }
+            else currentEventNormal = true;
+            //log only if something to send
+            log.Info($"SenderThread : Tentative d'envoi vers Qognify - Files d'envoi : System={_queueSystem.Count}, Normal={_queueNormal.Count}");
+
+            //todo vérifier si le délai est expiré avant de l'enlever de la liste faire cette action si un échec à l'envoi est constaté
+
+            TimeSpan difference = DateTime.Now - evt.EventDatetime;
+
+            //check elapsedtime between 2 date for expiry
+            if (difference.Seconds > PurgeEventGapSec)
+            {
+                //élément est oublié
+                log.Info($"SenderThread : Échec envoi KEY={evt.Keyname} délai dépassé {evt.EventDatetime }");
+
+            }
+            else
+            {
+                //if faut savoir de quel liste il vient et le rajouter
+                if (currentEventNormal )
+                {
+                    //ajout de l'élément tant que pas expiré et qu'il n'est pas envoyé
+                    _queueNormal.Enqueue(evt);
+                }
+
+            }
 
             //DDM : *** Rajouter le PURGE event si date de purge dépassée ?****
 
             //à ce stade l'événement est déjà retiré de la liste d'attente
 
-            TimeSpan difference = DateTime.UtcNow - evt.EventDatetime;
-            //check elapsedtime between 2 date for expiry
-            if (difference.Seconds > PurgeEventGapSec)
+            log.Info($"SenderThread SEND → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
+
+            if (!Send2Qognify)
             {
-                log.Info($"SenderThread : Échec envoi KEY={evt.Keyname} délai dépassé ");
-
+                log.Info("SenderThread : [TEST MODE] Envoi désactivé");
+                return;
             }
-            else
+
+
+            try
             {
-
-
-
-
-                log.Info($"SenderThread SEND → IP={qognifyIp}, PORT={evt.Port}, MSG={evt.AlarmNumber}, KEY={evt.Keyname}");
-
-                if (!Send2Qognify)
+                log.Info($"SenderThread : Tentative d'envoi vers Qognify - Files d'envoi : System={_queueSystem.Count}, Normal={_queueNormal.Count}");
+                bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
+                if (!SendSuccess)
                 {
-                    log.Info("SenderThread : [TEST MODE] Envoi désactivé");
-                    return;
+                    log.Warn($"SenderThread : Échec envoi KEY={evt.Keyname}");
+                    //todo ddm neutralize alarme system qui perturbe les test SystemEvent.EnqueueEvent(_queueSystem, "SYSTEM.CLIENT_DISCONNECTED", "9002");
                 }
-
-
-                try
-                {
-                    log.Info($"SenderThread : Tentative d'envoi vers Qognify - Files d'envoi : System={_queueSystem.Count}, Normal={_queueNormal.Count}");
-                    bool SendSuccess = Qognify.Networking.QognifySender.Send(qognifyIp, evt.Port, evt.AlarmNumber);
-                    if (!SendSuccess)
-                    {
-                        log.Warn($"SenderThread : Échec envoi KEY={evt.Keyname}");
-                        SystemEvent.EnqueueEvent(_queueSystem, "SYSTEM.CLIENT_DISCONNECTED", "9002");
-                    }
-                    //Thread.Sleep(100);//Utile ?
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"SenderThread : Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
-                }
+                //Thread.Sleep(100);//Utile ?
             }
+            catch (Exception ex)
+            {
+                log.Error($"SenderThread : Erreur lors de l'envoi de l'événement KEY={evt.Keyname} , Message = {ex.Message}");
+            }
+
         }
     }
 }

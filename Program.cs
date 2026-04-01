@@ -42,7 +42,7 @@ namespace Qognify
             var sendQueueSystem = new ConcurrentQueue<OutgoingEvent>();
 
             log.Warn("********** START  Qognify **********");
-            SystemEvent.EnqueueEvent(sendQueueSystem, "SYSTEM.REBOOT", "SYS002- EBI LINK Restart");
+            //todo ddm neutralize alarme system qui perturbe les test SystemEvent.EnqueueEvent(sendQueueSystem, "SYSTEM.REBOOT", "SYS002- EBI LINK Restart");
 
 
             // création du serveur TCP en écoute PORT TCP
