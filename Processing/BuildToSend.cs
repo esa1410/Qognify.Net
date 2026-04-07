@@ -90,7 +90,7 @@ namespace Qognify.Processing
                         string uniqueKey = $"{key}:{alarmNumber}:{portStr}";
                         log.Debug($"BuildToSend 03 : Création de Unique key {uniqueKey} pour gérer les rate-limit en fonction du paramètre délai + ignorer les key en doublons");
 
-                        //ESA TODO : Refaire la gestion Doublon
+                        //TODO ESA : Refaire la gestion Doublon
                         //log.Debug($"BuildToSend 04 : Check des doublons et si '{key}' est déjà dans ToSend on passe au suivant");
                         //if (toSend.ContainsKey(key))
                         //{

@@ -88,18 +88,12 @@ namespace Qognify.Processing
             {
                 //élément est oublié
                 log.Info($"SenderThread : Échec envoi KEY={evt.Keyname} délai dépassé {evt.EventDatetime }");
-
+                return;
             }
-            else
-            {
-                //if faut savoir de quel liste il vient et le rajouter
-                if (currentEventNormal )
-                {
-                    //ajout de l'élément tant que pas expiré et qu'il n'est pas envoyé
-                    _queueNormal.Enqueue(evt);
-                }
 
-            }
+
+
+
 
             //DDM : *** Rajouter le PURGE event si date de purge dépassée ?****
 
@@ -122,6 +116,12 @@ namespace Qognify.Processing
                 {
                     log.Warn($"SenderThread : Échec envoi KEY={evt.Keyname}");
                     //todo ddm neutralize alarme system qui perturbe les test SystemEvent.EnqueueEvent(_queueSystem, "SYSTEM.CLIENT_DISCONNECTED", "9002");
+                    //if faut savoir de quel liste il vient et le rajouter
+                    if (currentEventNormal)
+                    {
+                        //ajout de l'élément tant que pas expiré et qu'il n'est pas envoyé
+                        _queueNormal.Enqueue(evt);
+                    }
                 }
                 //Thread.Sleep(100);//Utile ?
             }
