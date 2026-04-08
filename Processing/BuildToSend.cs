@@ -40,7 +40,7 @@ namespace Qognify.Processing
                     if (File.Exists(FlagFile))
                     {
                         File.Delete(FlagFile);
-                        CopyFilefromWebIntoActive(CSVFilesPathWeb,baseDir);
+                        CopyFilefromWebIntoActive(CSVFilesPathWeb, baseDir);
                     }
                 }
                 //todo créer une copie des fichiers
@@ -57,12 +57,8 @@ namespace Qognify.Processing
                 string key = rec["Keyname"];
                 string eventdate = rec["DateTime"];
                 string alarmType = rec["AlarmType"];
-                 
+                //todo voir pour utiliser la valeur au lieu de la condition alarm
 
-                //todo concerne date de l'evenement savoir si le delay d'expiration est dépassé
-                //on fait quoi on ignore mais une information est placée dans le log faut-il y ajouter le delay qui est dépassé
-               // DateTime _EventDatetime;
-               //_EventDatetime EventDatetime = ConvertDate(eventdate);
 
                 log.Info($"BuildToSend 01 : ***New Event***  :  {eventdate} - {key} - {alarmType} ");
                 if (!filterMap.ContainsKey(key))
@@ -147,13 +143,17 @@ namespace Qognify.Processing
                             Keyname = key,
                             AlarmNumber = alarmNumber,
                             Port = port,
-                            EventDatetime= ConvertDate(eventdate)
+                            EventDatetime = ConvertDate(eventdate)
                         });
 
                         SkipCombination:
                         continue;
                     }
-                }//ddm ignore receive with ACK and OK
+                }
+                else
+                {
+                    //todo ddm ignore receive with ACK and OK ajout dans le log
+                }
             }
         }
 
@@ -167,7 +167,7 @@ namespace Qognify.Processing
             {
                 //todo add for expiry time and log into no send
                 //compare delay 
-               // Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
+                // Console.WriteLine($"Date convertie : {result:dd/MM/yyyy HH:mm:ss}");
                 TimeSpan difference = DateTime.UtcNow - result;
 
                 //Console.WriteLine($"Difference {difference.Seconds }");
@@ -181,7 +181,7 @@ namespace Qognify.Processing
             return result;
         }
 
-        private static void CopyFilefromWebIntoActive(string sourceDir, string DestinationCsvFile )
+        private static void CopyFilefromWebIntoActive(string sourceDir, string DestinationCsvFile)
         {
             // Récupère tous les chemins de fichiers du répertoire source
             string[] files = Directory.GetFiles(sourceDir);
@@ -192,13 +192,13 @@ namespace Qognify.Processing
                 // Extrait uniquement le nom du fichier (ex: "photo.jpg")
                 string fileName = Path.GetFileName(file);
                 // Combine la destination avec le nom du fichier
-                string destPath = Path.Combine(DestinationCsvFile,fileName );
+                string destPath = Path.Combine(DestinationCsvFile, fileName);
 
 
                 // Copie le fichier (true pour écraser si déjà présent)
                 File.Copy(file, destPath, true);
             }
         }
-        
+
     }
 }

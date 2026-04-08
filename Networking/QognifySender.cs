@@ -34,7 +34,7 @@ namespace Qognify.Networking
                     stream.Write(data, 0, data.Length);
                     stream.Flush();
 
-                    log.Info($"Message envoyé à {ip}:{port} → {message}");
+                    log.Info($"QognifySender : Message envoyé à {ip}:{port} → {message}");
                     _Send = true;
                 }
             }
