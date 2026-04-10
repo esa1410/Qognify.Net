@@ -12,7 +12,7 @@ namespace Qognify.Processing
         {
             if (port == -1)
                 port = Properties.Settings.Default.TcpPortSystem; 
-            
+            //Gestion doublons
             foreach (var evt in queue)
             {
                 if (evt.Keyname == keyname &&
