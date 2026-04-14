@@ -2,11 +2,17 @@ using NLog;
 using Qognify.Config;
 using Qognify.Logging;
 using System;
-using System.IO;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
+using System.Reflection.Emit;
+using System.Security.Claims;
+using System.Text;
 using System.Threading;
+using System.Timers;
+using System.Xml.Linq;
+using static System.Net.WebRequestMethods;
 
 namespace Qognify.Processing
 {
@@ -36,16 +42,28 @@ namespace Qognify.Processing
         public string CSVFilesPathWeb = Properties.Settings.Default.CSVFilesPathWeb;
         //public string BaseDirCSV = AppDomain.CurrentDomain.BaseDirectory;
 
+//Column 1 : 20 Fixed character : Date/Time
+//Column 2 : 40 Fixed character : Name
+//Column 3 : 20 Fixed character : Alarm Type
+//Column 4 : 12 Fixed character : Ack
+//Column 5 : 4  Fixed character : Level
+//Column 6 : 20 Fixed character : Value
+//Column 7 : 86 Fixed character : Description
+//<------20----------><----------------40--------------------><--------20--------><----12----><4 ><--------20--------><---------------Description 86 ----------
+//19-Aug-25  14:38:22  Keyname 01                               ALARM                         L 00                      Verr.Dérogation porte                                                                  
+//13-Sep-25  17:05:01  Keyname 02                               RECOVER              OK       H 00                      Alarm Recovery for Source OPC server
+
 
         // Définition des champs FIXED-WIDTH (équivalent Python FIELDS)
         private readonly List<Tuple<string, int>> _fields = new List<Tuple<string, int>>
         {
             Tuple.Create("DateTime", 20),
             Tuple.Create("Keyname", 40),
-            Tuple.Create("AlarmType", 20),
+            //Tuple.Create("AlarmType", 20),
+            Tuple.Create("AlarmCondition", 20),
             Tuple.Create("Ack", 12),
             Tuple.Create("Level", 4),
-            Tuple.Create("Status", 20),
+            Tuple.Create("Value", 20),
             Tuple.Create("Description", 86)
         };
 
@@ -105,22 +123,8 @@ namespace Qognify.Processing
                         var dictEvents = FixedWidthParser.Parse(batch, _fields);
 
                         // 2) build_to_send
-                        //Console.WriteLine("EventProcessor 02 : Traitement des données dans DICT_Events");
                         log.Info("EventProcessor 02 : Traitement des données dans DICT_Events");
-
-                        //string csvPath = System.IO.Path.Combine(
-                        //    _settings.Files.BaseDir,
-                        //    _settings.Files.CsvListKeynameAction
-                        //string csvPath = Path.Combine(Program.baseDir,Properties.Settings.Default.CsvListKeynameAction);
-
-                        BuildToSend.Build(
-                            dictEvents,
-                            _lastSentTimes,
-                            //csvPath,
-                            //Program.baseDir,
-                            _sendQueue
-                        );
-
+                        BuildToSend.Build(dictEvents,_lastSentTimes,_sendQueue);
                         log.Debug("EventProcessor 03 : BuildToSend terminé, éléments ajoutés dans la file d'envoi");
                     }
 
