@@ -8,6 +8,7 @@ using Qognify.Networking;
 using Qognify.Processing;
 using NLog;
 using Qognify.Logging;
+using System.ServiceProcess;
 
 namespace Qognify
 {
@@ -19,7 +20,21 @@ namespace Qognify
 
         static void Main()
         {
+#if DEBUG
+            StartApplication();
+#else
+            ServiceBase[] ServicesToRun;
+            ServicesToRun = new ServiceBase[]
+            {
+                new QognifySrv()
+            };
+            ServiceBase.Run(ServicesToRun);
+#endif
+           
+        }
 
+        public static void StartApplication()
+        {
             //Path Pour LogN
             var logDir = Path.Combine(baseDir, "logs");
             var logArchive = Path.Combine(logDir, "archive");
@@ -70,7 +85,10 @@ namespace Qognify
                 TimeSpan.FromMilliseconds(Properties.Settings.Default.SendIntervalMilliSeconds),
                 cts.Token
             );
-
+            server.Start();
+            processor.Start();
+            sender.Start();
+#if DEBUG
             Console.WriteLine("Qognify .NET server started. Press Ctrl+C to exit.");
 
             Console.CancelKeyPress += (s, e) =>
@@ -79,15 +97,9 @@ namespace Qognify
                 cts.Cancel();
             };
 
-            server.Start();
-            processor.Start();
-            sender.Start();
-
             while (!cts.IsCancellationRequested)
                 Thread.Sleep(200);
-
-            server.Dispose();
-            Console.WriteLine("Stopped.");
+#endif
         }
     }
 }
