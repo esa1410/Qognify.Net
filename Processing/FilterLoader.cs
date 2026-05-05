@@ -7,12 +7,12 @@ namespace Qognify.Processing
 {
     public static class FilterLoader
     {
-       
+
 
         public static Dictionary<string, List<Dictionary<string, string>>> LoadFilterCsv(string path)
         {
             var map = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
-            
+
             //todo catch exception if occurs
             //file exist or content not complain
             var lines = File.ReadAllLines(path);
@@ -52,7 +52,6 @@ namespace Qognify.Processing
         public static HashSet<string> LoadAlarmTypeCsv(string path)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
             var lines = File.ReadAllLines(path);
             foreach (var line in lines.Skip(1))
             {
@@ -62,7 +61,6 @@ namespace Qognify.Processing
                     set.Add(cols[0].Trim());
                 }
             }
-
             return set;
         }
     }

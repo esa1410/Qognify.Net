@@ -108,7 +108,18 @@ namespace Qognify.Processing
                         if (!alarmTypeCache.ContainsKey(csvAlm))
                         {
                             string path = Path.Combine(baseDir, csvAlm + ".csv");
-                            alarmTypeCache[csvAlm] = FilterLoader.LoadAlarmTypeCsv(path);
+                            //todo file exist
+                            //todo check if file exist
+                            bool Csvexists = File.Exists(path);
+                            if (Csvexists)
+                            {
+                                alarmTypeCache[csvAlm] = FilterLoader.LoadAlarmTypeCsv(path);
+                            }
+                            else
+                            {
+                                log.Debug($"BuildToSend 05 : CsvFile {path} does not exist.");
+                                goto SkipCombination;
+                            }
                         }
 
 
@@ -147,7 +158,7 @@ namespace Qognify.Processing
                         {
                             log.Debug($"BuildToSend 05 : (-) Alm Type {alarmType} n'est pas accepté {key} in {csvAlm} -> check in file List-Keyname-Action if other type are allowed for {key}");
                         }
-                    SkipCombination:
+                        SkipCombination:
                         continue;
                     }
                 }
@@ -155,7 +166,7 @@ namespace Qognify.Processing
                 {
                     log.Debug($"BuildToSend 01 : (-) RTN / ACK for source {key}");
                 }
-            GotoNextEvent:
+                GotoNextEvent:
                 continue;
             }
         }
